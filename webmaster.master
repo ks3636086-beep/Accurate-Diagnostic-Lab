@@ -138,11 +138,12 @@
                         </li>
 
                         <li class="has-sub">
-                            <a class="js-arrow" href="#"><i class="fa-solid fa-table"></i>Primary menu</a> 
+                            <a class="js-arrow" href="#"><i class="fa-solid fa-table"></i>Primary menu</a>
                             <ul class="list-unstyled navbar__sub-list js-sub-list">
                                 <li><a href="table.html">Due Clearance</a></li>
+                                <li><a href="Patient_History.aspx">Patient History</a></li>
                                 <li><a href="Patient_List.aspx">Patient List</a></li>
-                                <li><a href="Patient_List1.aspx">Patient1 List</a></li>
+                                <li><a href="Patient_Service.aspx">Patient Service</a></li>
                                 <li><a href="data-table.html">Patient Merge</a></li>
                                 <li><a href="data-table.html">Patient Wise WorkList</a></li>
                                 <li><a href="data-table.html">Refund Cancel</a></li>
