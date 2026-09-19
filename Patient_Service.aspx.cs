@@ -91,7 +91,6 @@ public partial class Patient_Service : System.Web.UI.Page
         Response.Write("<script>alert('Service added successfully.');</script>");
     }
 
-
     private void LoadServices()
     {
         ddlService.Items.Clear();

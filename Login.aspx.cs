@@ -11,88 +11,74 @@ using System.Xml.Linq;
 
 public partial class ecommerce_customer : System.Web.UI.Page
 {
-    public SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
-
     public enum MessageType { Success, Error, Info, Warning };
+
     protected void ShowMessage(string Message, MessageType type)
     {
-        ScriptManager.RegisterStartupScript(this, this.GetType(), System.Guid.NewGuid().ToString(), "ShowMessage('" + Message + "','" + type + "');", true);
+        ScriptManager.RegisterStartupScript(this, this.GetType(),
+            System.Guid.NewGuid().ToString(),
+            "ShowMessage('" + Message + "','" + type + "');", true);
     }
 
-    string Name, UserID, Password, Contactno, email, pincode, user_type;
-
-    Master mst = new Master();
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (!IsPostBack)
-        {
-            if (Session["backend_name"] == null)
-            {
-                if (Request.Cookies["AdminUserName"] != null && Request.Cookies["AdminPassword"] != null)
-                {
-                    //Login();
-                }
-            }
-        }
     }
 
     protected void btnlogin_ServerClick(object sender, EventArgs e)
     {
         if (txtemail.Text.Length > 0 && txtpassword.Text.Length > 0)
         {
-            con.Open();
+            string connStr = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
 
-            string get_query = "Select * from ecommerce_backend where backend_name='" + txtemail.Text + "'";
-            SqlCommand get_cmd = new SqlCommand(get_query, con);
-            SqlDataReader get_data = get_cmd.ExecuteReader();
-            if (get_data.Read())
+            using (SqlConnection con = new SqlConnection(connStr))
             {
-                UserID = get_data["id"].ToString();
+                con.Open();
 
-                Name = get_data["backend_name"].ToString();
-                Contactno = get_data["backend_mobileno"].ToString();
-                email = get_data["backend_email"].ToString();
-                user_type = get_data["backend_role"].ToString();
-                string sessionId = HttpContext.Current.Session.SessionID;
-                Password = get_data["backend_password"].ToString();
-                //pincode = get_data["vendor_pincode"].ToString();
-
-                //string pass = ob.Decrypted(Password);
-                string pass = Password;
-                if (Name == txtemail.Text && pass == txtpassword.Text)
+                string get_query = "SELECT * FROM ecommerce_backend WHERE backend_name = @name";
+                using (SqlCommand get_cmd = new SqlCommand(get_query, con))
                 {
-                    Session["id"] = UserID;
+                    get_cmd.Parameters.AddWithValue("@name", txtemail.Text.Trim());
 
-                    Session["backend_name"] = Name;
-                    Session["backend_mobileno"] = Contactno;
-                    Session["backend_email"] = email;
-                    Session["backend_role"] = user_type;
-                    //Session["vendor_pincode"] = pincode;
+                    using (SqlDataReader get_data = get_cmd.ExecuteReader())
+                    {
+                        if (get_data.Read())
+                        {
+                            string UserID = get_data["id"].ToString();
+                            string Name = get_data["backend_name"].ToString();
+                            string Contactno = get_data["backend_mobileno"].ToString();
+                            string email = get_data["backend_email"].ToString();
+                            string user_type = get_data["backend_role"].ToString();
+                            string Password = get_data["backend_password"].ToString();
 
-                    if (user_type == "admin")
-                    {
-                        Response.Redirect("dashboard.aspx");
-                    }
-                    else
-                    {
-                        Response.Redirect("all-orders.aspx");
+                            if (Name == txtemail.Text.Trim() && Password == txtpassword.Text)
+                            {
+                                Session["id"] = UserID;
+                                Session["backend_name"] = Name;
+                                Session["backend_mobileno"] = Contactno;
+                                Session["backend_email"] = email;
+                                Session["backend_role"] = user_type;
+
+                                if (user_type == "admin")
+                                    Response.Redirect("Dashboard.aspx");
+                                else
+                                    Response.Redirect("all-orders.aspx");
+                            }
+                            else
+                            {
+                                ShowMessage("Invalid User Name or Password! Please try again!", MessageType.Error);
+                            }
+                        }
+                        else
+                        {
+                            ShowMessage("Invalid User Name or Password! Please try again!", MessageType.Error);
+                        }
                     }
                 }
-                else
-                {
-                    ShowMessage("Invalid User Name or Password! Please try again!", MessageType.Error);
-                }
-
-            }
-            else
-            {
-                ShowMessage("Invalid User Name or Password! Please try again!", MessageType.Error);
             }
         }
         else
         {
             ShowMessage("Please enter Email and Password.", MessageType.Error);
         }
-
     }
 }
